@@ -1,0 +1,29 @@
+{
+  "name": "instabot",
+  "version": "1.0.0",
+  "description": "Bots for Instagram",
+  "main": "index.js",
+  "dependencies": {
+    "chrome-cookies-secure": "^1.3.1",
+    "puppeteer": "^2.0.0",
+    "puppeteer-core": "^2.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lijnam/instabot.git"
+  },
+  "keywords": [
+    "instagram",
+    "bots"
+  ],
+  "author": "lijnam",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lijnam/instabot/issues"
+  },
+  "homepage": "https://github.com/lijnam/instabot#readme"
+}

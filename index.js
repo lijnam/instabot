@@ -249,9 +249,8 @@ async function likePosts(page) {
                     /* follow more account */
                     followed_people = await followPeople(page);
 
-
                     /* try to unfollow some account */
-                    await unfollowPeople();
+                    await unfollowPeople(page);
                 }
                 /* wait for random minutes  */
                 waitTime = randomRange(30, 120);

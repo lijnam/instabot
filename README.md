@@ -10,6 +10,7 @@ Bots  for instagram
 * What it does?
   * likes the posts
   * follows new people from suggestions
+  * starts unfollowing people when total followed accounts is greater tha 5000
 
 * GUI Dashboard with pm2
   * install pm2 in your server <https://github.com/Unitech/pm2>

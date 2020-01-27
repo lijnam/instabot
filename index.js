@@ -237,14 +237,14 @@ async function likePosts(page) {
                     /* wait some time  */
                     waitTime = randomRange(30, 60);
                     log("waiting for " + waitTime + " minutes after following people");
-                    log('will resume at ' + getDateWithTimeAddition(new Date(), waitTime));
+                    log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
 
                     await page.waitFor(oneMinute * waitTime);
                 }
                 /* wait for random minutes  */
                 waitTime = randomRange(30, 120);
                 log("waiting  for " + waitTime + " minutes before liking more posts");
-                log('will resume at ' + getDateWithTimeAddition(new Date(), waitTime));
+                log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
 
                 await page.waitFor(oneMinute * waitTime);
             }

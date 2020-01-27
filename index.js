@@ -115,14 +115,12 @@ async function submitLoginForm() {
     /* username input */
     await page.waitFor('._2hvTZ.pexuQ.zyHYP[name="username"]');
     await page.type('._2hvTZ.pexuQ.zyHYP[name="username"]', USERNAME, { delay: 200 });
-    // await page.type('._2hvTZ.pexuQ.zyHYP[name="username"]', 'qrstorenepal', { delay: 200 });
 
 
     log('inputing password');
     /* password input */
     await page.waitFor('._2hvTZ.pexuQ.zyHYP[name="password"]');
     await page.type('._2hvTZ.pexuQ.zyHYP[name="password"]', PASSWORD, { delay: 200 });
-    // await page.type('._2hvTZ.pexuQ.zyHYP[name="password"]', 'welcome$1290$', { delay: 200 });
 
 
     log('logging in...')
@@ -349,13 +347,13 @@ async function unfollowPeople(page) {
             { waitUntil: 'networkidle2' });
 
         /* chcek number of followers */
-        total_followers_selector = '.Y8-fY .-nal3[href="/qrstorenepal/followers/"] span.g47SY';
+        total_followers_selector = '.Y8-fY .-nal3[href="/' + USERNAME + '/followers/"] span.g47SY';
         await page.waitFor(total_followers_selector);
         total_followers = await page.$eval(total_followers_selector, e => e.innerText);
         log('number of followers : ' + total_followers);
 
         /* check nubmber of followed users */
-        total_following_selector = '.Y8-fY .-nal3[href="/qrstorenepal/following/"] span.g47SY';
+        total_following_selector = '.Y8-fY .-nal3[href="/' + USERNAME + '/following/"] span.g47SY';
         await page.waitFor(total_following_selector);
         total_following = await page.$eval(total_following_selector, e => e.innerText);
         log('nubmber of followed account  : ' + total_following);
@@ -365,7 +363,7 @@ async function unfollowPeople(page) {
         }
 
         /* click following  */
-        following_selector = '.Y8-fY .-nal3[href="/qrstorenepal/following/"]';
+        following_selector = '.Y8-fY .-nal3[href="/' + USERNAME + '/following/"]';
 
         await page.waitFor(following_selector);
         await page.click(following_selector);
@@ -404,7 +402,7 @@ async function unfollowPeople(page) {
         });
         total_people_unfollowed += unfollow_object.total_people_unfollowed;
 
-        log(unfollow_object.total_people_unfollowed+ " accounts unfollowed.")
+        log(unfollow_object.total_people_unfollowed + " accounts unfollowed.")
 
         /* wait some time  */
         waitTime = randomRange(30, 60);

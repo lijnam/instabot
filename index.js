@@ -15,6 +15,11 @@ const USERNAME = '';
 /* instagram password */
 const PASSWORD = '';
 
+/* set it to false if you want to open the browser */
+const HEADLESS = true;
+
+
+
 var total_people_followed = 0;
 var total_people_unfollowed = 0;
 var oneSecond = 1000;
@@ -26,48 +31,48 @@ function randomRange(min, max) {
     return ~~(Math.random() * (max - min + 1)) + min
 }
 
-async function scrapeInfiniteScrollItems(
+async function scroll(
     page,
-    extractElements,
-    itemTargetCount,
+    scroll_times,
     scrollDelay = 3000,
 ) {
-    let items = [];
     try {
         let previousHeight;
         var count = 0;
-        while ((items.length < itemTargetCount) && (count < itemTargetCount)) {
-            extractItems = await page.$$(extractElements);
-            items.push(extractItems);
-            log(items.length);
+        while (count <= scroll_times) {
             /* scroll codes */
             try {
+
                 previousHeight = await page.evaluate('document.body.scrollHeight');
 
                 await page.evaluate('window.scrollTo(0, document.body.scrollHeight)');
 
                 await page.waitForFunction(`document.body.scrollHeight > ${previousHeight}`);
+
+                log('scroll ' + count);
+                await page.waitFor(scrollDelay);
+                count++;
+
             } catch (error) {
                 /* cant scroll anymore */
-                log('Cannot Scroll anymore ');
-                log('Total items :' + items.length);
+                log('Cannot scroll anymore ');
+                log('Total Scolls :' + count);
 
                 break;
             }
-            await page.waitFor(scrollDelay);
-            count++;
+
         }
     } catch (error) {
-        logError('scrapeInfiniteScrollItems', error)
+        logError('scroll', error)
     }
-    return items;
+    return count;
 }
 
 async function init() {
     try {
         log('opening Browser...');
         const browser = await puppeteer.launch({
-            // headless: false,
+            headless: HEADLESS,
             // executablePath: "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
             args: ["--window-size=1920,1080"],
             defaultViewport: {
@@ -181,64 +186,79 @@ async function removeNotification() {
     await removeNotification();
 
     await likePosts(page);
+    // await unfollowPeople(page);
 
 })();
+
+async function noLikablePosts(page) {
+    log("Following more accounts..");
+
+    /* follow more account */
+    followed_people = await followPeople(page);
+
+    /* reset total account followed  */
+    total_people_followed = 0;
+
+    /* wait for 6 hours */
+    log("waiting  for 6 hours no more likeable posts...")
+    log('will resume at ' + getDateWithTimeAddition(new Date(), oneHour * 6));
+    await page.waitFor(oneHour * 6); // 
+    return true; F
+}
 
 async function likePosts(page) {
     try {
         while (true) {
             /* like button svg  */
             var LIKEBTNS = '.ltpMr.Slqrh button.wpO6b svg[aria-label="Like"]';
-            // let extractedElements = await page.$$(LIKEBTNS);
 
-            /* Scroll and extract items from the page.  */
-            log('scrolling some posts..')
-            await scrapeInfiniteScrollItems(page, LIKEBTNS, 50);
+            var temp_liked_post = 0;
+            var temp_no_likable_count = 0;
+            var no_of_posts_to_like = randomRange(10, 30);
+            var has_likable_post = true;
 
-            posts = await page.$$eval(LIKEBTNS, async (svgs) => {
-                // console.log(svgs.length);
-                randomRange = function (min, max) {
-                    return ~~(Math.random() * (max - min + 1)) + min
+            while (temp_liked_post <= no_of_posts_to_like) {
+
+                /* stop after no likable post is >= 5 */
+                if (temp_no_likable_count >= 5) {
+                    has_likable_post = false;
+                    break;
                 }
-                let liked_post = 0;
-                for (let svg of svgs) {
-                    // wait one second
-                    await new Promise(function (resolve) { setTimeout(resolve, randomRange(3000, 10000)) });
-                    // console.log(svg.parentElement);
-                    await svg.parentElement.click();
-                    liked_post++;
+
+                /* Scroll and extract items from the page.  */
+                log('scrolling some posts..')
+                await scroll(page, randomRange(5, 10));
+
+                log('liking posts..')
+                posts = await page.$$eval(LIKEBTNS, async (svgs) => {
+                    // console.log(svgs.length);
+                    randomRange = function (min, max) {
+                        return ~~(Math.random() * (max - min + 1)) + min
+                    }
+                    let liked_post = 0;
+                    for (let svg of svgs) {
+                        // wait one second
+                        await new Promise(function (resolve) { setTimeout(resolve, randomRange(3000, 10000)) });
+                        // console.log(svg.parentElement);
+                        await svg.parentElement.click();
+                        liked_post++;
+                    }
+                    return {
+                        likeable_posts: svgs.length,
+                        liked_post: liked_post
+                    };
+                });
+                if (posts.likeable_posts < 1) {
+                    temp_no_likable_count++;
                 }
-                return {
-                    likeable_posts: svgs.length,
-                    liked_post: liked_post
-                };
-            });
-
-            log("likeable Posts:" + posts.likeable_posts);
-            log("liked Posts:" + posts.liked_post);
-
-
-            randomRange = function (min, max) {
-                return ~~(Math.random() * (max - min + 1)) + min
+                temp_liked_post += posts.liked_post
+                log("liked posts:" + temp_liked_post);
             }
 
 
             /* wait for some time if likeable post is 0 */
-            if (posts.likeable_posts < 1) {
-                log("Following more accounts..");
-
-                /* follow more account */
-                followed_people = await followPeople(page);
-
-
-                /* reset total account followed  */
-                total_people_followed = 0;
-
-                /* wait for 6 hours */
-                log("waiting  for 6 hours no more likeable posts...")
-                log('will resume at ' + getDateWithTimeAddition(new Date(), oneHour * 6));
-                await page.waitFor(oneHour * 6); // 
-                // await page.waitFor(30000);
+            if (!has_likable_post) {
+                await noLikablePosts(page);
             } else {
                 if (total_people_followed <= 100) {
                     log("Total followed account :" + total_people_followed);
@@ -257,6 +277,8 @@ async function likePosts(page) {
 
                 await page.waitFor(oneMinute * waitTime);
             }
+
+            log('reloading page');
             await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
 
         }
@@ -281,7 +303,7 @@ async function followPeople(page) {
 
         log('scrolling suggested followers...')
         /* Scroll and extract items from the page.  */
-        await scrapeInfiniteScrollItems(page, follow_buttons, no_of_people_to_follow);
+        await scroll(page, 5);
 
         follow_object = await page.$$eval(follow_buttons, async (follow_buttons) => {
             // console.log(svgs.length);
@@ -294,7 +316,7 @@ async function followPeople(page) {
                 // console.log('total_people_followed : ' + total_people_followed);
                 // console.log('no_of_people_to_follow : ' + no_of_people_to_follow);
 
-                if (total_people_followed > no_of_people_to_follow) {
+                if (total_people_followed >= no_of_people_to_follow) {
                     // console.log(total_people_followed)
                     break;
                 }
@@ -359,6 +381,7 @@ async function unfollowPeople(page) {
         log('nubmber of followed account  : ' + total_following);
 
         if (parseInt(total_following) < 5000) {
+
             throw ('Wont start unfollowing until total number of followed account is greater than ' + 5000);
         }
 

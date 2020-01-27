@@ -281,6 +281,7 @@ async function followPeople(page) {
         var follow_buttons = 'button.sqdOP.L3NKy.y3zKF';
         let no_of_people_to_follow = 5
 
+        log('scrolling suggested followers...')
         /* Scroll and extract items from the page.  */
         await scrapeInfiniteScrollItems(page, follow_buttons, no_of_people_to_follow);
 
@@ -313,6 +314,9 @@ async function followPeople(page) {
         });
         total_people_followed += follow_object.total_people_followed;
 
+        log(follow_object.total_people_followed + " new accounts followed ");
+        log("Total followed account :" + total_people_followed);
+
         /* wait some time  */
         waitTime = randomRange(30, 60);
         log("waiting for " + waitTime + " minutes after following account");
@@ -324,8 +328,6 @@ async function followPeople(page) {
         log('going to instagram homepage');
         await page.goto('https://www.instagram.com', { waitUntil: 'networkidle2' });
         await page.waitFor(randomRange(5000, 30000));
-
-        log(follow_object.total_people_followed + " new accounts followed ");
 
 
         return follow_object.total_people_followed;
@@ -401,6 +403,8 @@ async function unfollowPeople(page) {
             };
         });
         total_people_unfollowed += unfollow_object.total_people_unfollowed;
+
+        log(unfollow_object.total_people_unfollowed+ " accounts unfollowed.")
 
         /* wait some time  */
         waitTime = randomRange(30, 60);

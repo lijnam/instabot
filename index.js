@@ -210,7 +210,7 @@ async function likePosts(page) {
             let oneHour = oneMinute * 60;
 
             /* wait for some time if likeable post is 0 */
-            if (likeablePosts < 1) {
+            if (posts.likeable_posts < 1) {
                 log("Following more people..");
 
                 /* follow more people */

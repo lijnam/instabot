@@ -198,8 +198,8 @@ async function likePosts(page) {
                 };
             });
 
-            log("likeable Posts:" + postMessage.likeable_posts);
-            log("liked Posts:" + postMessage.liked_post);
+            log("likeable Posts:" + posts.likeable_posts);
+            log("liked Posts:" + posts.liked_post);
 
 
             randomRange = function (min, max) {

@@ -17,7 +17,6 @@ const PASSWORD = '';
 
 var total_people_folowed = 0;
 
-
 function randomRange(min, max) {
     return ~~(Math.random() * (max - min + 1)) + min
 }
@@ -35,7 +34,7 @@ async function scrapeInfiniteScrollItems(
         while ((items.length < itemTargetCount) && (count < itemTargetCount)) {
             extractItems = await page.$$(extractElements);
             items.push(extractItems);
-            log("items found :" + items.length);
+            log(items.length);
             /* scroll codes */
             try {
                 previousHeight = await page.evaluate('document.body.scrollHeight');
@@ -45,7 +44,7 @@ async function scrapeInfiniteScrollItems(
                 await page.waitForFunction(`document.body.scrollHeight > ${previousHeight}`);
             } catch (error) {
                 /* cant scroll anymore */
-                log('  Cannot Scroll anymore ');
+                log('Cannot Scroll anymore ');
                 log('Total items :' + items.length);
 
                 break;
@@ -54,7 +53,7 @@ async function scrapeInfiniteScrollItems(
             count++;
         }
     } catch (error) {
-        console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + '   ERROR :: scrapeInfiniteScrollItems', error)
+        logError('scrapeInfiniteScrollItems', error)
     }
     return items;
 }
@@ -86,6 +85,10 @@ function log(message) {
     console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + '   ' + message);
 }
 
+function getDateWithTimeAddition(date, miliSeconds) {
+    return new Date(date.getTime() + miliSeconds).toLocaleString("en-US", { timeZone: "Asia/Kathmandu" });
+}
+
 async function gotoInstaLoginPage() {
     try {
         await page.goto('https://www.instagram.com/accounts/login/?source=auth_switcher',
@@ -103,10 +106,13 @@ async function submitLoginForm() {
     /* username input */
     await page.waitFor('._2hvTZ.pexuQ.zyHYP[name="username"]');
     await page.type('._2hvTZ.pexuQ.zyHYP[name="username"]', USERNAME, { delay: 200 });
+    // await page.type('._2hvTZ.pexuQ.zyHYP[name="username"]', 'qrstorenepal', { delay: 200 });
+
 
     /* password input */
     await page.waitFor('._2hvTZ.pexuQ.zyHYP[name="password"]');
     await page.type('._2hvTZ.pexuQ.zyHYP[name="password"]', PASSWORD, { delay: 200 });
+    // await page.type('._2hvTZ.pexuQ.zyHYP[name="password"]', 'welcome$1290$', { delay: 200 });
 
 
     /* click submit */
@@ -173,21 +179,28 @@ async function likePosts(page) {
             /* Scroll and extract items from the page.  */
             await scrapeInfiniteScrollItems(page, LIKEBTNS, 50);
 
-            likeablePosts = await page.$$eval(LIKEBTNS, async (svgs) => {
+            posts = await page.$$eval(LIKEBTNS, async (svgs) => {
                 // console.log(svgs.length);
                 randomRange = function (min, max) {
                     return ~~(Math.random() * (max - min + 1)) + min
                 }
+                let liked_post = 0;
                 for (let svg of svgs) {
                     // wait one second
                     await new Promise(function (resolve) { setTimeout(resolve, randomRange(3000, 10000)) });
                     // console.log(svg.parentElement);
                     await svg.parentElement.click();
+                    liked_post++;
                 }
-                return svgs.length;
+                return {
+                    likeable_posts: svgs.length,
+                    liked_post: liked_post
+                };
             });
 
-            console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  likeablePosts:" + likeablePosts);
+            log("likeable Posts:" + postMessage.likeable_posts);
+            log("liked Posts:" + postMessage.liked_post);
+
 
             randomRange = function (min, max) {
                 return ~~(Math.random() * (max - min + 1)) + min
@@ -198,46 +211,50 @@ async function likePosts(page) {
 
             /* wait for some time if likeable post is 0 */
             if (likeablePosts < 1) {
-                console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  Following more people");
+                log("Following more people..");
 
                 /* follow more people */
-                followable_people = await followPeople(page);
-                console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  followable_people:" + followable_people);
+                followed_people = await followPeople(page);
+                log(followed_people + " new People followed ");
 
                 /* reset total people followed  */
                 total_people_folowed = 0;
 
                 /* wait for 6 hours */
-                console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  waiting  for 6 hours no more likeable posts")
+                log("waiting  for 6 hours no more likeable posts...")
+                log('will resume at ' + getDateWithTimeAddition(new Date(), oneHour * 6));
                 await page.waitFor(oneHour * 6); // 
                 // await page.waitFor(30000);
             } else {
                 if (total_people_folowed <= 100) {
-                    console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  Total followed people :" + total_people_folowed);
-                    console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  Following more people");
+                    log("Total followed people :" + total_people_folowed);
+                    log("Following more people...");
 
                     /* follow more people */
-                    followable_people = await followPeople(page);
-                    console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  followable_people:" + followable_people);
+                    followed_people = await followPeople(page);
+                    log(followed_people + " new People followed ");
 
                     /* wait some time  */
                     waitTime = randomRange(30, 60);
-                    console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "waiting for " + waitTime + " minutes after following people")
+                    log("waiting for " + waitTime + " minutes after following people");
+                    log('will resume at ' + getDateWithTimeAddition(new Date(), waitTime));
+
                     await page.waitFor(oneMinute * waitTime);
                 }
                 /* wait for random minutes  */
                 waitTime = randomRange(30, 120);
-                console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + "  waiting  for " + waitTime + " minutes before liking more posts")
+                log("waiting  for " + waitTime + " minutes before liking more posts");
+                log('will resume at ' + getDateWithTimeAddition(new Date(), waitTime));
+
                 await page.waitFor(oneMinute * waitTime);
             }
             await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
 
         }
     } catch (error) {
-        console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + '  ERROR:: on likePosts', error);
+        logError('on likePosts', error);
         return false;
     }
-    return true;
 
 }
 
@@ -290,7 +307,7 @@ async function followPeople(page) {
         return follow_object.total_people_folowed;
 
     } catch (error) {
-        console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + '  ERROR:: on followPeople', error);
+        logError('on followPeople', error);
         await page.goto('https://www.instagram.com', { waitUntil: 'networkidle2' });
         return false;
     }

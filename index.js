@@ -310,7 +310,7 @@ async function followPeople(page) {
             randomRange = function (min, max) {
                 return ~~(Math.random() * (max - min + 1)) + min
             }
-            let no_of_people_to_follow = 5;
+            let no_of_people_to_follow = randomRange(1,7);
             let total_people_followed = 0
             for (let follow_button of follow_buttons) {
                 // console.log('total_people_followed : ' + total_people_followed);

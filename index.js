@@ -19,7 +19,6 @@ const PASSWORD = '';
 const HEADLESS = true;
 
 
-
 var total_people_followed = 0;
 var total_people_unfollowed = 0;
 var oneSecond = 1000;
@@ -187,6 +186,8 @@ async function removeNotification() {
 
     await likePosts(page);
     // await unfollowPeople(page);
+    // await watchStories(page);
+    // await followPeople(page);
 
 })();
 
@@ -203,7 +204,7 @@ async function noLikablePosts(page) {
     log("waiting  for 6 hours no more likeable posts...")
     log('will resume at ' + getDateWithTimeAddition(new Date(), oneHour * 6));
     await page.waitFor(oneHour * 6); // 
-    return true; F
+    return true;
 }
 
 async function likePosts(page) {
@@ -217,6 +218,7 @@ async function likePosts(page) {
             var no_of_posts_to_like = randomRange(10, 30);
             var has_likable_post = true;
 
+            log('trying to like ' + no_of_posts_to_like + ' posts...')
             while (temp_liked_post <= no_of_posts_to_like) {
 
                 /* stop after no likable post is >= 5 */
@@ -255,11 +257,19 @@ async function likePosts(page) {
                 log("liked posts:" + temp_liked_post);
             }
 
+            watch_story = randomRange(0, 1);
+
+            /* watch story */
+            if (watch_story === 1) {
+                watchStories(page);
+            }
+
 
             /* wait for some time if likeable post is 0 */
             if (!has_likable_post) {
                 await noLikablePosts(page);
             } else {
+
                 if (total_people_followed <= 100) {
                     log("Total followed account :" + total_people_followed);
                     log("Following more account...");
@@ -276,6 +286,11 @@ async function likePosts(page) {
                 log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
 
                 await page.waitFor(oneMinute * waitTime);
+            }
+
+            /* watch story */
+            if (watch_story === 0) {
+                watchStories(page);
             }
 
             log('reloading page');
@@ -299,24 +314,23 @@ async function followPeople(page) {
 
         /* like button svg  */
         var follow_buttons = 'button.sqdOP.L3NKy.y3zKF';
-        let no_of_people_to_follow = 5
+        let no_of_people_to_follow = randomRange(1, 7);
 
         log('scrolling suggested followers...')
         /* Scroll and extract items from the page.  */
         await scroll(page, 5);
-
-        follow_object = await page.$$eval(follow_buttons, async (follow_buttons) => {
-            // console.log(svgs.length);
+        log('trying to follow ' + no_of_people_to_follow + ' accounts...')
+        follow_object = await page.$$eval(follow_buttons, async (follow_buttons, args) => {
+            console.log(args);
             randomRange = function (min, max) {
                 return ~~(Math.random() * (max - min + 1)) + min
             }
-            let no_of_people_to_follow = randomRange(1,7);
             let total_people_followed = 0
             for (let follow_button of follow_buttons) {
                 // console.log('total_people_followed : ' + total_people_followed);
                 // console.log('no_of_people_to_follow : ' + no_of_people_to_follow);
 
-                if (total_people_followed >= no_of_people_to_follow) {
+                if (total_people_followed >= args.no_of_people_to_follow) {
                     // console.log(total_people_followed)
                     break;
                 }
@@ -331,7 +345,10 @@ async function followPeople(page) {
                 total_people_followed: total_people_followed,
                 followable_people: follow_buttons.length
             };
+        }, {
+            no_of_people_to_follow: no_of_people_to_follow
         });
+
         total_people_followed += follow_object.total_people_followed;
 
         log(follow_object.total_people_followed + " new accounts followed ");
@@ -442,6 +459,38 @@ async function unfollowPeople(page) {
 
     } catch (error) {
         logError('on unfollowPeople', error);
+        log('going to instagram homepage');
+        await page.goto('https://www.instagram.com', { waitUntil: 'networkidle2' });
+        return false;
+    }
+}
+
+async function watchStories(page) {
+    try {
+
+        await page.waitFor(randomRange(5000, 10000));
+
+        log('going to instagram homepage...')
+        await page.goto('https://www.instagram.com/', { waitUntil: 'networkidle2' });
+
+        /* click watch all */
+        watch_all_selector = '._7UhW9.PIoXz.qyrsm.KV-D4.uL8Hv';
+        await page.waitFor(watch_all_selector);
+        await page.click(watch_all_selector);
+
+        watch_duration = randomRange(1, 10) * oneMinute;
+        log('watching stories for ' + parseInt((watch_duration / oneMinute)) + 'minutes...');
+        log('will stop watching at ' + getDateWithTimeAddition(new Date(), watch_duration));
+        await page.waitFor(watch_duration);
+        log('stopped watching stories')
+
+        log('going to instagram homepage...')
+        await page.goto('https://www.instagram.com/', { waitUntil: 'networkidle2' });
+
+        return true
+
+    } catch (error) {
+        logError('on watchStories', error);
         log('going to instagram homepage');
         await page.goto('https://www.instagram.com', { waitUntil: 'networkidle2' });
         return false;

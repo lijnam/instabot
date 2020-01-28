@@ -261,7 +261,7 @@ async function likePosts(page) {
 
             /* watch story */
             if (watch_story === 1) {
-                watchStories(page);
+                await watchStories(page);
             }
 
 
@@ -290,7 +290,7 @@ async function likePosts(page) {
 
             /* watch story */
             if (watch_story === 0) {
-                watchStories(page);
+                await watchStories(page);
             }
 
             log('reloading page');

@@ -366,7 +366,7 @@ async function likePosts(page) {
             log("liked posts:" + temp_liked_post);
         }
         total_posts_liked += temp_liked_post;
-        log('total postes liked as on ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + ' : ' + total_posts_liked);
+        log('total postes liked since ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + ' : ' + total_posts_liked);
         return {
             posts_liked: temp_liked_post,
             has_likable_post: has_likable_post,
@@ -433,7 +433,7 @@ async function followPeople(page) {
         total_accounts_followed += follow_object.total_accounts_followed;
 
         log(follow_object.total_accounts_followed + " new accounts followed ");
-        log("Total followed account as on " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_followed);
+        log("Total followed account since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_followed);
 
 
         await page.waitFor(randomRange(5000, 10000));
@@ -522,7 +522,7 @@ async function unfollowPeople(page) {
         total_accounts_unfollowed += unfollow_object.total_accounts_unfollowed;
 
         log(unfollow_object.total_accounts_unfollowed + " accounts unfollowed.");
-        log("Total unfollowed account  as on " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_unfollowed);
+        log("Total unfollowed account  since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_unfollowed);
 
 
 

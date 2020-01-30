@@ -17,10 +17,23 @@ const PASSWORD = '';
 
 /* set it to false if you want to open the browser */
 const HEADLESS = true;
+
+/* set timezone of your place */
 const TIMEZONE = 'Asia/Kathmandu';
 
+/* maximum accounts to follow per day */
+const MAX_ACCOUNT_TO_FOLLOW_PER_DAY = 50;
+
+/* maximum accounts to unfollow per day */
+const MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY = 50;
+
+/* maximum posts to like pwe day */
+const MAX_LIKES_PER_DAY = 500;
 
 /* ----------------------------------------------------------------------- */
+
+
+
 
 
 
@@ -58,8 +71,8 @@ var oneHour = oneMinute * 60;
             };
             /* check recoreded_date is today */
             if (recorded_date.getDate() === getRecorededDate().getDate()) {
-                /* like no more than 500 posts per day */
-                if (total_posts_liked <= 500) {
+                /* like no more than MAX_LIKES_PER_DAY posts per day */
+                if (total_posts_liked <= MAX_LIKES_PER_DAY) {
 
                     like_posts_object = await likePosts(page);
                     has_likable_post = like_posts_object.has_likable_post;
@@ -68,8 +81,7 @@ var oneHour = oneMinute * 60;
                     }
                 } else {
                     log('no posts liked as like limit reached');
-                    recorded_date = getRecorededDate();
-                    total_posts_liked = 0;
+                    log('total postes liked since ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + ' : ' + total_posts_liked);
                 }
 
                 /* watch story */
@@ -80,8 +92,8 @@ var oneHour = oneMinute * 60;
 
                 if (has_likable_post) {
 
-                    /* follow no more than 100 accounts per day */
-                    if (total_accounts_followed <= 100) {
+                    /* follow no more than MAX_ACCOUNT_TO_FOLLOW_PER_DAY accounts per day */
+                    if (total_accounts_followed <= MAX_ACCOUNT_TO_FOLLOW_PER_DAY) {
                         /* follow more account */
                         followed_people_object = await followPeople(page);
                         if (followed_people_object.accounts_followed > 0) {
@@ -89,19 +101,21 @@ var oneHour = oneMinute * 60;
                         }
                     } else {
                         log('no accounts followed as follow limit reached');
-                        recorded_date = getRecorededDate();
-                        total_accounts_followed = 0;
+                        log("Total followed account since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_followed);
+
                     }
 
-                    /* unfollow no more than 100 accounts per day */
-                    if (total_accounts_unfollowed <= 100) {
+                    /* unfollow no more than MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY accounts per day */
+                    if (total_accounts_unfollowed <= MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY) {
                         /* try to unfollow some account */
                         await unfollowPeople(page);
                         if (followed_people_object.accounts_unfollowed > 0) {
                             wait_object.unfollowed = true;
                         }
                     } else {
-                        total_accounts_unfollowed = 0;
+                        log('no accounts unfollowed as follow limit reached');
+                        log("Total unfollowed account  since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_unfollowed);
+
                     }
 
                 } else {
@@ -142,6 +156,10 @@ var oneHour = oneMinute * 60;
                 await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
             } else {
                 recorded_date = getRecorededDate();
+                total_accounts_followed = 0;
+                total_accounts_unfollowed = 0;
+                total_posts_liked = 0;
+
             }
 
         } catch (error) {
@@ -305,12 +323,25 @@ async function removeNotification() {
 async function noLikablePosts(page) {
     log("Following more accounts..");
 
-    /* follow more account */
-    followed_people = await followPeople(page);
+    /* follow no more than MAX_ACCOUNT_TO_FOLLOW_PER_DAY accounts per day */
+    if (total_accounts_followed <= MAX_ACCOUNT_TO_FOLLOW_PER_DAY) {
+        /* follow more account */
+        followed_people_object = await followPeople(page);
+    } else {
+        log('no accounts followed as follow limit reached');
+        log("Total followed account since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_followed);
 
-    /* reset total account followed  */
-    total_accounts_followed = 0;
+    }
 
+    /* unfollow no more than MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY accounts per day */
+    if (total_accounts_unfollowed <= MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY) {
+        /* try to unfollow some account */
+        await unfollowPeople(page);
+    } else {
+        log('no accounts unfollowed as follow limit reached');
+        log("Total unfollowed account  since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_unfollowed);
+
+    }
     /* wait for 6 hours */
     log("waiting  for 6 hours no more likeable posts...")
     log('will resume at ' + getDateWithTimeAddition(new Date(), oneHour * 6));

@@ -1,10 +1,11 @@
 # instabot
 
-Bots  for instagram
+Bots  for instagram 
 
 * How to use
   * run `npm install`
-  * add your userame and password in index.js
+  * add your USERNAME and PASSWORD in index.js 
+  * add BACKUP CODES in index.js if you have 2 factor authentication
   * run `node index.js`
 
 * What it does?
@@ -13,7 +14,17 @@ Bots  for instagram
   * starts unfollowing people when you have followed more tha 5000 accounts
   * watches stories 
 
-* GUI Dashboard with pm2
+* Notes
+    * it waits for some random time after like/follow/unfollow
+    * you can configure  these from index.js
+      * MAX_ACCOUNT_TO_FOLLOW_PER_DAY
+      * MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY
+      *  MAX_LIKES_PER_DAY  
+    
+
+
+
+* GUI Web Interface with pm2
   * install pm2 in your server <https://github.com/Unitech/pm2>
   * start the  application using `pm2 start index.js`
   * install pm2-gui <https://github.com/lijnam/pm2-gui>

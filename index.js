@@ -32,11 +32,6 @@ const MAX_LIKES_PER_DAY = 500;
 
 /* ----------------------------------------------------------------------- */
 
-
-
-
-
-
 var total_accounts_followed = 0;
 var total_accounts_unfollowed = 0;
 var total_posts_liked = 0;
@@ -126,31 +121,35 @@ var oneHour = oneMinute * 60;
                 if (watch_story === 2) {
                     await watchStories(page);
                 }
-
                 /* wait for some time */
+                waitTime = 0;
                 if (wait_object.liked) {
                     /* wait for random minutes  */
-                    waitTime = randomRange(30, 60);
-                    log("waiting  for " + waitTime + " minutes before liking more posts");
-                    log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
-                    await page.waitFor(oneMinute * waitTime);
+                    waitTime += randomRange(30, 60);
+                    // log("waiting  for " + waitTime + " minutes before liking more posts");
+                    // log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
+                    // await page.waitFor(oneMinute * waitTime);
                 }
 
                 if (wait_object.followed) {
                     /* wait some time  */
-                    waitTime = randomRange(30, 120);
-                    log("waiting for " + waitTime + " minutes after following account");
-                    log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
-                    await page.waitFor(oneMinute * waitTime);
+                    waitTime += randomRange(30, 120);
+                    // log("waiting for " + waitTime + " minutes after following account");
+                    // log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
+                    // await page.waitFor(oneMinute * waitTime);
                 }
 
                 if (wait_object.unfollowed) {
                     /* wait some time  */
-                    waitTime = randomRange(30, 60);
-                    log("waiting for " + waitTime + " minutes after unfollowing account");
-                    log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
-                    await page.waitFor(oneMinute * waitTime);
+                    waitTime += randomRange(30, 60);
+                    // log("waiting for " + waitTime + " minutes after unfollowing account");
+                    // log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
+                    // await page.waitFor(oneMinute * waitTime);
                 }
+
+                log("waiting for " + waitTime + " minutes ");
+                log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
+                await page.waitFor(oneMinute * waitTime);
 
                 log('reloading page');
                 await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
@@ -163,7 +162,7 @@ var oneHour = oneMinute * 60;
             }
 
         } catch (error) {
-
+            logError(error, '');
         }
     }
 

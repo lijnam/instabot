@@ -19,15 +19,135 @@ const PASSWORD = '';
 const HEADLESS = true;
 
 
-var total_people_followed = 0;
-var total_people_unfollowed = 0;
-var oneSecond = 1000;
-var oneMinute = oneSecond * 60;
-var oneHour = oneMinute * 60;
+(async () => {
 
+    init = await init();
+
+    browser = init.browser;
+
+    page = init.page;
+
+    await gotoInstaLoginPage();
+
+    await submitLoginForm();
+
+    await verificationCodes();
+
+    await removeNotification();
+
+    while (true) {
+        try {
+            wait_object = {
+                liked: false,
+                followed: false,
+                unfollowed: false,
+            };
+            /* check recoreded_date is today */
+            if (recorded_date.getDate() === getRecorededDate().getDate()) {
+                /* like no more than 500 posts per day */
+                if (total_posts_liked <= 500) {
+
+                    like_posts_object = await likePosts(page);
+                    has_likable_post = like_posts_object.has_likable_post;
+                    if (!has_likable_post) {
+                        wait_object.liked = true;
+                    }
+                } else {
+                    log('no posts liked as like limit reached');
+                    recorded_date = getRecorededDate();
+                    total_posts_liked = 0;
+                }
+
+                /* watch story */
+                watch_story = randomRange(1, 2);
+                if (watch_story === 1) {
+                    await watchStories(page);
+                }
+
+                if (has_likable_post) {
+
+                    /* follow no more than 100 accounts per day */
+                    if (total_accounts_followed <= 100) {
+                        /* follow more account */
+                        followed_people_object = await followPeople(page);
+                        if (followed_people_object.accounts_followed > 0) {
+                            wait_object.followed = true;
+                        }
+                    } else {
+                        log('no accounts followed as follow limit reached');
+                        recorded_date = getRecorededDate();
+                        total_accounts_followed = 0;
+                    }
+
+                    /* unfollow no more than 100 accounts per day */
+                    if (total_accounts_unfollowed <= 100) {
+                        /* try to unfollow some account */
+                        await unfollowPeople(page);
+                        if (followed_people_object.accounts_unfollowed > 0) {
+                            wait_object.unfollowed = true;
+                        }
+                    } else {
+                        total_accounts_unfollowed = 0;
+                    }
+
+                } else {
+                    await noLikablePosts(page);
+                }
+
+                /* watch story */
+                if (watch_story === 2) {
+                    await watchStories(page);
+                }
+
+                /* wait for some time */
+                if (wait_object.liked) {
+                    /* wait for random minutes  */
+                    waitTime = randomRange(30, 60);
+                    log("waiting  for " + waitTime + " minutes before liking more posts");
+                    log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
+                    await page.waitFor(oneMinute * waitTime);
+                }
+
+                if (wait_object.followed) {
+                    /* wait some time  */
+                    waitTime = randomRange(30, 120);
+                    log("waiting for " + waitTime + " minutes after following account");
+                    log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
+                    await page.waitFor(oneMinute * waitTime);
+                }
+
+                if (wait_object.unfollowed) {
+                    /* wait some time  */
+                    waitTime = randomRange(30, 60);
+                    log("waiting for " + waitTime + " minutes after unfollowing account");
+                    log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
+                    await page.waitFor(oneMinute * waitTime);
+                }
+
+                log('reloading page');
+                await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+            } else {
+                recorded_date = getRecorededDate();
+            }
+
+        } catch (error) {
+
+        }
+    }
+
+
+    // await unfollowPeople(page);
+    // await watchStories(page);
+    // await followPeople(page);
+
+})();
+
+function getRecorededDate() {
+    return new Date(Date().toLocaleString("en-US", { timeZone: TIMEZONE }));
+}
 
 function randomRange(min, max) {
-    return ~~(Math.random() * (max - min + 1)) + min
+    return parseInt(~~(Math.random() * (max - min + 1)) + min);
 }
 
 async function scroll(
@@ -88,15 +208,15 @@ async function init() {
 }
 
 function logError(error, message) {
-    console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + '   ERROR : ' + message, error)
+    console.log(new Date().toLocaleString("en-US", { timeZone: TIMEZONE }) + '   ERROR : ' + message, error)
 }
 
 function log(message) {
-    console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" }) + '   ' + message);
+    console.log(new Date().toLocaleString("en-US", { timeZone: TIMEZONE }) + '   ' + message);
 }
 
 function getDateWithTimeAddition(date, miliSeconds) {
-    return new Date(date.getTime() + miliSeconds).toLocaleString("en-US", { timeZone: "Asia/Kathmandu" });
+    return new Date(date.getTime() + miliSeconds).toLocaleString("en-US", { timeZone: TIMEZONE });
 }
 
 async function gotoInstaLoginPage() {
@@ -168,29 +288,6 @@ async function removeNotification() {
     }
 }
 
-(async () => {
-
-    init = await init();
-
-    browser = init.browser;
-
-    page = init.page;
-
-    await gotoInstaLoginPage();
-
-    await submitLoginForm();
-
-    await verificationCodes();
-
-    await removeNotification();
-
-    await likePosts(page);
-    // await unfollowPeople(page);
-    // await watchStories(page);
-    // await followPeople(page);
-
-})();
-
 async function noLikablePosts(page) {
     log("Following more accounts..");
 
@@ -198,7 +295,7 @@ async function noLikablePosts(page) {
     followed_people = await followPeople(page);
 
     /* reset total account followed  */
-    total_people_followed = 0;
+    total_accounts_followed = 0;
 
     /* wait for 6 hours */
     log("waiting  for 6 hours no more likeable posts...")
@@ -209,103 +306,73 @@ async function noLikablePosts(page) {
 
 async function likePosts(page) {
     try {
-        while (true) {
-            /* like button svg  */
-            var LIKEBTNS = '.ltpMr.Slqrh button.wpO6b svg[aria-label="Like"]';
 
-            var temp_liked_post = 0;
-            var temp_no_likable_count = 0;
-            var no_of_posts_to_like = randomRange(10, 30);
-            var has_likable_post = true;
+        /* like button svg  */
+        var LIKEBTNS = '.ltpMr.Slqrh button.wpO6b svg[aria-label="Like"]';
+        var temp_liked_post = 0;
+        var temp_no_likable_count = 0;
+        var no_of_posts_to_like = randomRange(10, 30);
+        var has_likable_post = true;
 
-            log('trying to like ' + no_of_posts_to_like + ' posts...')
-            while (temp_liked_post <= no_of_posts_to_like) {
+        while (temp_liked_post <= no_of_posts_to_like) {
 
-                /* stop after no likable post is >= 5 */
-                if (temp_no_likable_count >= 5) {
-                    has_likable_post = false;
-                    break;
+            /* stop after no likable post is >= 5 */
+            if (temp_no_likable_count >= 5) {
+                has_likable_post = false;
+                break;
+            }
+
+            /* Scroll and extract items from the page.  */
+            log('scrolling some posts..')
+            await scroll(page, randomRange(5, 10));
+
+            log('liking posts..')
+            posts = await page.$$eval(LIKEBTNS, async (svgs) => {
+                // console.log(svgs.length);
+                randomRange = function (min, max) {
+                    return ~~(Math.random() * (max - min + 1)) + min
                 }
-
-                /* Scroll and extract items from the page.  */
-                log('scrolling some posts..')
-                await scroll(page, randomRange(5, 10));
-
-                log('liking posts..')
-                posts = await page.$$eval(LIKEBTNS, async (svgs) => {
-                    // console.log(svgs.length);
-                    randomRange = function (min, max) {
-                        return ~~(Math.random() * (max - min + 1)) + min
-                    }
-                    let liked_post = 0;
-                    for (let svg of svgs) {
-                        // wait one second
-                        await new Promise(function (resolve) { setTimeout(resolve, randomRange(3000, 10000)) });
-                        // console.log(svg.parentElement);
-                        await svg.parentElement.click();
-                        liked_post++;
-                    }
-                    return {
-                        likeable_posts: svgs.length,
-                        liked_post: liked_post
-                    };
-                });
-                if (posts.likeable_posts < 1) {
-                    temp_no_likable_count++;
+                let liked_post = 0;
+                for (let svg of svgs) {
+                    // wait one second
+                    await new Promise(function (resolve) { setTimeout(resolve, randomRange(3000, 10000)) });
+                    // console.log(svg.parentElement);
+                    await svg.parentElement.click();
+                    liked_post++;
                 }
-                temp_liked_post += posts.liked_post
-                log("liked posts:" + temp_liked_post);
+                return {
+                    likeable_posts: svgs.length,
+                    liked_post: liked_post
+                };
+            });
+            if (posts.likeable_posts < 1) {
+                temp_no_likable_count++;
             }
-
-            watch_story = randomRange(0, 1);
-
-            /* watch story */
-            if (watch_story === 1) {
-                await watchStories(page);
-            }
-
-
-            /* wait for some time if likeable post is 0 */
-            if (!has_likable_post) {
-                await noLikablePosts(page);
-            } else {
-
-                if (total_people_followed <= 100) {
-                    log("Total followed account :" + total_people_followed);
-                    log("Following more account...");
-
-                    /* follow more account */
-                    followed_people = await followPeople(page);
-
-                    /* try to unfollow some account */
-                    await unfollowPeople(page);
-                }
-                /* wait for random minutes  */
-                waitTime = randomRange(30, 120);
-                log("waiting  for " + waitTime + " minutes before liking more posts");
-                log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
-
-                await page.waitFor(oneMinute * waitTime);
-            }
-
-            /* watch story */
-            if (watch_story === 0) {
-                await watchStories(page);
-            }
-
-            log('reloading page');
-            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
-
+            temp_liked_post += posts.liked_post
+            log("liked posts:" + temp_liked_post);
         }
+        total_posts_liked += temp_liked_post;
+        log('total postes liked as on ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }).format + ' : ' + total_posts_liked);
+        return {
+            posts_liked: temp_liked_post,
+            has_likable_post: has_likable_post,
+        }
+
     } catch (error) {
         logError('on likePosts', error);
-        return false;
+        return {
+            posts_liked: 0,
+            has_likable_post: true,
+        }
     }
 
 }
 
 async function followPeople(page) {
     try {
+
+        log("Total followed account :" + total_accounts_followed);
+        log("Following more account...");
         await page.waitFor(randomRange(5000, 10000));
 
         log('going to suggested people page')
@@ -325,41 +392,35 @@ async function followPeople(page) {
             randomRange = function (min, max) {
                 return ~~(Math.random() * (max - min + 1)) + min
             }
-            let total_people_followed = 0
+            let total_accounts_followed = 0
             for (let follow_button of follow_buttons) {
-                // console.log('total_people_followed : ' + total_people_followed);
+                // console.log('total_accounts_followed : ' + total_accounts_followed);
                 // console.log('no_of_people_to_follow : ' + no_of_people_to_follow);
 
-                if (total_people_followed >= args.no_of_people_to_follow) {
-                    // console.log(total_people_followed)
+                if (total_accounts_followed >= args.no_of_people_to_follow) {
+                    // console.log(total_accounts_followed)
                     break;
                 }
                 // wait 
                 await new Promise(function (resolve) { setTimeout(resolve, randomRange(3000, 10000)) });
                 // console.log(follow_button);
                 await follow_button.click();
-                total_people_followed++;
+                total_accounts_followed++;
 
             }
             return {
-                total_people_followed: total_people_followed,
+                total_accounts_followed: total_accounts_followed,
                 followable_people: follow_buttons.length
             };
         }, {
             no_of_people_to_follow: no_of_people_to_follow
         });
 
-        total_people_followed += follow_object.total_people_followed;
+        total_accounts_followed += follow_object.total_accounts_followed;
 
-        log(follow_object.total_people_followed + " new accounts followed ");
-        log("Total followed account :" + total_people_followed);
+        log(follow_object.total_accounts_followed + " new accounts followed ");
+        log("Total followed account as on " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_followed);
 
-        /* wait some time  */
-        waitTime = randomRange(30, 60);
-        log("waiting for " + waitTime + " minutes after following account");
-        log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
-
-        await page.waitFor(oneMinute * waitTime);
 
         await page.waitFor(randomRange(5000, 10000));
         log('going to instagram homepage');
@@ -367,13 +428,17 @@ async function followPeople(page) {
         await page.waitFor(randomRange(5000, 30000));
 
 
-        return follow_object.total_people_followed;
+        return {
+            accounts_followed: follow_object.total_accounts_followed
+        };
 
     } catch (error) {
         logError('on followPeople', error);
         log('going to instagram homepage');
         await page.goto('https://www.instagram.com', { waitUntil: 'networkidle2' });
-        return false;
+        return {
+            accounts_followed: 0
+        };
     }
 }
 
@@ -417,10 +482,10 @@ async function unfollowPeople(page) {
                 return ~~(Math.random() * (max - min + 1)) + min
             }
             let no_of_people_to_unfollow = 5;
-            let total_people_unfollowed = 0
+            let total_accounts_unfollowed = 0
             for (let following_button of following_buttona) {
 
-                if (total_people_unfollowed > no_of_people_to_unfollow) {
+                if (total_accounts_unfollowed > no_of_people_to_unfollow) {
                     break;
                 }
 
@@ -432,36 +497,38 @@ async function unfollowPeople(page) {
                 await new Promise(function (resolve) { setTimeout(resolve, randomRange(3000, 10000)) });
                 await document.querySelector('button.aOOlW.-Cab_').click();;
 
-                total_people_unfollowed++;
+                total_accounts_unfollowed++;
 
             }
             return {
-                total_people_unfollowed: total_people_unfollowed,
+                total_accounts_unfollowed: total_accounts_unfollowed,
                 unfollowable_people: following_buttona.length
             };
         });
-        total_people_unfollowed += unfollow_object.total_people_unfollowed;
+        total_accounts_unfollowed += unfollow_object.total_accounts_unfollowed;
 
-        log(unfollow_object.total_people_unfollowed + " accounts unfollowed.")
+        log(unfollow_object.total_accounts_unfollowed + " accounts unfollowed.");
+        log("Total unfollowed account  as on " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_unfollowed);
 
-        /* wait some time  */
-        waitTime = randomRange(30, 60);
-        log("waiting for " + waitTime + " minutes after unfollowing account");
-        log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
-        await page.waitFor(oneMinute * waitTime);
+
 
         await page.waitFor(randomRange(5000, 10000));
         log('going to instagram homepage');
         await page.goto('https://www.instagram.com', { waitUntil: 'networkidle2' });
         await page.waitFor(randomRange(5000, 30000));
-        return unfollow_object.total_people_unfollowed;
+
+        return {
+            accounts_unfollowed: unfollow_object.total_accounts_unfollowed
+        }
 
 
     } catch (error) {
         logError('on unfollowPeople', error);
         log('going to instagram homepage');
         await page.goto('https://www.instagram.com', { waitUntil: 'networkidle2' });
-        return false;
+        return {
+            accounts_unfollowed: 0
+        }
     }
 }
 
@@ -479,7 +546,7 @@ async function watchStories(page) {
         await page.click(watch_all_selector);
 
         watch_duration = randomRange(1, 10) * oneMinute;
-        log('watching stories for ' + parseInt((watch_duration / oneMinute)) + 'minutes...');
+        log('watching stories for ' + parseInt((watch_duration / oneMinute)) + ' minutes...');
         log('will stop watching at ' + getDateWithTimeAddition(new Date(), watch_duration));
         await page.waitFor(watch_duration);
         log('stopped watching stories')

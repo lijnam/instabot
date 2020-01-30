@@ -366,7 +366,7 @@ async function likePosts(page) {
             log("liked posts:" + temp_liked_post);
         }
         total_posts_liked += temp_liked_post;
-        log('total postes liked as on ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }).format + ' : ' + total_posts_liked);
+        log('total postes liked as on ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + ' : ' + total_posts_liked);
         return {
             posts_liked: temp_liked_post,
             has_likable_post: has_likable_post,

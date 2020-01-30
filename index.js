@@ -17,6 +17,20 @@ const PASSWORD = '';
 
 /* set it to false if you want to open the browser */
 const HEADLESS = true;
+const TIMEZONE = 'Asia/Kathmandu';
+
+
+/* ----------------------------------------------------------------------- */
+
+
+
+var total_accounts_followed = 0;
+var total_accounts_unfollowed = 0;
+var total_posts_liked = 0;
+var recorded_date = getRecorededDate();
+var oneSecond = 1000;
+var oneMinute = oneSecond * 60;
+var oneHour = oneMinute * 60;
 
 
 (async () => {

@@ -63,7 +63,7 @@ var oneHour = oneMinute * 60;
 
                     like_posts_object = await likePosts(page);
                     has_likable_post = like_posts_object.has_likable_post;
-                    if (!has_likable_post) {
+                    if (has_likable_post) {
                         wait_object.liked = true;
                     }
                 } else {

@@ -1,5 +1,4 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs');
 
 const BACKUP_CODES = [
     '123654',
@@ -31,6 +30,7 @@ const MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY = 50;
 const MAX_LIKES_PER_DAY = 500;
 
 /* ----------------------------------------------------------------------- */
+
 
 var total_accounts_followed = 0;
 var total_accounts_unfollowed = 0;
@@ -146,6 +146,9 @@ var oneHour = oneMinute * 60;
                     // log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));
                     // await page.waitFor(oneMinute * waitTime);
                 }
+                log('Total postes liked since ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + ' : ' + total_posts_liked);
+                log("Total followed account since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_followed);
+                log("Total unfollowed account  since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_unfollowed);
 
                 log("waiting for " + waitTime + " minutes ");
                 log('will resume at ' + getDateWithTimeAddition(new Date(), oneMinute * waitTime));

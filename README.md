@@ -4,7 +4,6 @@ Bots  for instagram
 
 * How to use
   * run `npm install`
-  * add your USERNAME and PASSWORD in index.js 
   * add BACKUP CODES in index.js if you have 2 factor authentication
   * run `node index.js -username myusername -password mypassword `
 

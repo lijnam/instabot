@@ -16,13 +16,14 @@ Bots  for instagram
 
 * Notes
     * it waits for some random time after like/follow/unfollow
-    * you can configure  these from index.js
-      * MAX_ACCOUNT_TO_FOLLOW_PER_DAY
-      * MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY
-      *  MAX_LIKES_PER_DAY  
-    
-
-
+    * you can set these arguments
+      * `username`: Instagram username
+      * `password` : Instagram password
+      * `follow` : (DEFAULT 50) maximum total number of accounts to follow per day
+      * `unfollow` : (DEFAULT 50) maximum total number of accounts to unfollow per day (Starts unfollowing after your account have 5000+ accounts followed )
+      * `likes` :(DEFAULT 500) maximum posts to like we day
+      * `timezone` : (DEFAULT Asia/Kathmandu) Time zone  of your location so that you can see logs in your timezone
+  
 
 * GUI Web Interface with pm2
   * install pm2 in your server <https://github.com/Unitech/pm2>

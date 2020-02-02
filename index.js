@@ -9,25 +9,25 @@ const BACKUP_CODES = [
 ];
 
 /* instagram username */
-const USERNAME = '';
+var USERNAME = '';
 
 /* instagram password */
-const PASSWORD = '';
+var PASSWORD = '';
 
 /* set it to false if you want to open the browser */
-const HEADLESS = true;
+var HEADLESS = true;
 
 /* set timezone of your place */
-const TIMEZONE = 'Asia/Kathmandu';
+var TIMEZONE = 'Asia/Kathmandu';
 
 /* maximum accounts to follow per day */
-const MAX_ACCOUNT_TO_FOLLOW_PER_DAY = 50;
+var MAX_ACCOUNT_TO_FOLLOW_PER_DAY = 50;
 
 /* maximum accounts to unfollow per day */
-const MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY = 50;
+var MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY = 50;
 
 /* maximum posts to like pwe day */
-const MAX_LIKES_PER_DAY = 500;
+var MAX_LIKES_PER_DAY = 500;
 
 /* ----------------------------------------------------------------------- */
 
@@ -42,6 +42,23 @@ var oneHour = oneMinute * 60;
 
 
 (async () => {
+    process.argv.forEach(function (val, index, array) {
+        if (val === '-headless') {
+            HEADLESS = process.argv[index + 1];
+        } else if (val === '-username') {
+            USERNAME = process.argv[index + 1];
+        } else if (val === '-password') {
+            PASSWORD = process.argv[index + 1];
+        } else if (val === '-follow') {
+            MAX_ACCOUNT_TO_FOLLOW_PER_DAY = process.argv[index + 1];
+        } else if (val === '-unfollow') {
+            MAX_ACCOUNT_TO_UNFOLLOW_PER_DAY = process.argv[index + 1];
+        } else if (val === '-llikes') {
+            MAX_LIKES_PER_DAY = process.argv[index + 1];
+        } else if (val === '-timezone') {
+            TIMEZONE = process.argv[index + 1];
+        }
+    });
 
     init = await init();
 

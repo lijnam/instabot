@@ -1,6 +1,6 @@
 # instabot
 
-Bots  for instagram 
+Bots  for instagram (made with Puppeteer)
 
 * How to use
   * run `npm install`
@@ -9,20 +9,23 @@ Bots  for instagram
 
 * What it does?
   * likes the posts
-  * follows new people from suggestions
+  * follows new people from Instagram's suggestions.
   * starts unfollowing people when you have followed more tha 5000 accounts
   * watches stories 
 
 * Notes
     * it waits for some random time after like/follow/unfollow
+    * For better follow
     * you can set these arguments
       * `username`: Instagram username
       * `password` : Instagram password
       * `follow` : (DEFAULT 50) maximum accounts to follow per day
       * `unfollow` : (DEFAULT 50) maximum accounts to unfollow per day (Starts unfollowing after your account have 5000+ accounts followed )
       * `likes` :(DEFAULT 500) maximum posts to like per day
+      * `headless` : (DEFAULT true) set it to false if you want to see what  really happens.(Opens chromium browser)
       * `timezone` : (DEFAULT Asia/Kathmandu) Time zone  of your location so that you can see logs in your timezone
       Example : `node index.js -username myusername -password mypassword -follow 40 -likes 1000`
+    
 
   
 

@@ -18,8 +18,8 @@ Bots  for instagram
     * you can set these arguments
       * `username`: Instagram username
       * `password` : Instagram password
-      * `follow` : (DEFAULT 50) maximum total number of accounts to follow per day
-      * `unfollow` : (DEFAULT 50) maximum total number of accounts to unfollow per day (Starts unfollowing after your account have 5000+ accounts followed )
+      * `follow` : (DEFAULT 50) maximum accounts to follow per day
+      * `unfollow` : (DEFAULT 50) maximum accounts to unfollow per day (Starts unfollowing after your account have 5000+ accounts followed )
       * `likes` :(DEFAULT 500) maximum posts to like per day
       * `timezone` : (DEFAULT Asia/Kathmandu) Time zone  of your location so that you can see logs in your timezone
       Example : `node index.js -username myusername -password mypassword -follow 40 -likes 1000`

@@ -6,7 +6,7 @@ Bots  for instagram
   * run `npm install`
   * add your USERNAME and PASSWORD in index.js 
   * add BACKUP CODES in index.js if you have 2 factor authentication
-  * run `node index.js`
+  * run `node index.js -username myusername -password mypassword `
 
 * What it does?
   * likes the posts
@@ -23,7 +23,7 @@ Bots  for instagram
       * `unfollow` : (DEFAULT 50) maximum total number of accounts to unfollow per day (Starts unfollowing after your account have 5000+ accounts followed )
       * `likes` :(DEFAULT 500) maximum posts to like per day
       * `timezone` : (DEFAULT Asia/Kathmandu) Time zone  of your location so that you can see logs in your timezone
-      Example : node index.js -username myusername -password mypassword -follow 40 -likes 1000 
+      Example : `node index.js -username myusername -password mypassword -follow 40 -likes 1000`
 
   
 

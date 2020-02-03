@@ -612,14 +612,17 @@ async function watchStories(page) {
         await page.waitFor('section._9eogI._01nki.lXJWB');
 
         watch_duration = randomRange(1, 10);
-        log('watching stories for ' + parseInt((watch_duration * oneMinute)) + ' minutes...');
-        log('will stop watching at ' + getDateWithTimeAddition(new Date(), watch_duration));
+        log('watching stories for ' + parseInt((watch_duration)) + ' minutes...');
+        log('will stop watching at ' + getDateWithTimeAddition(new Date(), watch_duration * oneMinute));
         time_count = 0
         while (time_count <= ((watch_duration * 60) / 4)) {
+            log('watching stories for ' + parseInt((watch_duration)) + ' minutes...');
+            log('will stop watching at ' + getDateWithTimeAddition(new Date(), watch_duration * oneMinute));
             await page.waitFor(4 * oneSecond);
             await page.click('button.ow3u_');
             time_count++;
             log('watching story... ' + time_count);
+            log('--------------');
         }
         total_stories_watched += time_count;
         // await page.hover('section._8XqED.carul');

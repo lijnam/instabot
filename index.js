@@ -35,6 +35,7 @@ var MAX_LIKES_PER_DAY = 500;
 var total_accounts_followed = 0;
 var total_accounts_unfollowed = 0;
 var total_posts_liked = 0;
+var total_stories_watched = 0;
 var recorded_date = getRecorededDate();
 var oneSecond = 1000;
 var oneMinute = oneSecond * 60;
@@ -73,7 +74,6 @@ var oneHour = oneMinute * 60;
     await verificationCodes();
 
     await removeNotification();
-
     while (true) {
         try {
             wait_object = {
@@ -164,6 +164,7 @@ var oneHour = oneMinute * 60;
                     // await page.waitFor(oneMinute * waitTime);
                 }
                 log('Total postes liked since ' + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + ' : ' + total_posts_liked);
+                log("Total stories watched since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_stories_watched);
                 log("Total followed account since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_followed);
                 log("Total unfollowed account  since " + recorded_date.toLocaleString("en-US", { timeZone: TIMEZONE, dateStyle: 'full' }) + " : " + total_accounts_unfollowed);
 
@@ -375,7 +376,7 @@ async function likePosts(page) {
         var LIKEBTNS = '.ltpMr.Slqrh button.wpO6b svg[aria-label="Like"]';
         var temp_liked_post = 0;
         var temp_no_likable_count = 0;
-        var no_of_posts_to_like = randomRange(10, 30);
+        var no_of_posts_to_like = randomRange(10, 48);
         var has_likable_post = true;
 
         while (temp_liked_post <= no_of_posts_to_like) {
@@ -608,11 +609,21 @@ async function watchStories(page) {
         watch_all_selector = '._7UhW9.PIoXz.qyrsm.KV-D4.uL8Hv';
         await page.waitFor(watch_all_selector);
         await page.click(watch_all_selector);
+        await page.waitFor('section._9eogI._01nki.lXJWB');
 
-        watch_duration = randomRange(1, 10) * oneMinute;
-        log('watching stories for ' + parseInt((watch_duration / oneMinute)) + ' minutes...');
+        watch_duration = randomRange(1, 10);
+        log('watching stories for ' + parseInt((watch_duration * oneMinute)) + ' minutes...');
         log('will stop watching at ' + getDateWithTimeAddition(new Date(), watch_duration));
-        await page.waitFor(watch_duration);
+        time_count = 0
+        while (time_count <= ((watch_duration * 60) / 4)) {
+            await page.waitFor(4 * oneSecond);
+            await page.click('button.ow3u_');
+            time_count++;
+            log('watching story... ' + time_count);
+        }
+        total_stories_watched += time_count;
+        // await page.hover('section._8XqED.carul');
+
         log('stopped watching stories')
 
         log('going to instagram homepage...')

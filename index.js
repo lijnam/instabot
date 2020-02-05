@@ -177,6 +177,7 @@ var oneHour = oneMinute * 60;
             } else {
                 recorded_date = getRecorededDate();
                 total_accounts_followed = 0;
+                total_stories_watched = 0;
                 total_accounts_unfollowed = 0;
                 total_posts_liked = 0;
 
